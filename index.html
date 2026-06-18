@@ -655,9 +655,9 @@
         </div>
         ${!e.processada ? `
         <div class="card-actions">
-          <button class="action-btn done" onclick="marcarFet('${e.id}')">✓ Fet</button>
-          <button class="action-btn edit" onclick="obrirEditar('${e.id}')">✏ Editar</button>
-          <button class="action-btn send" onclick="enviarHub('${e.id}')">→ Hub</button>
+          <button class="action-btn done" onclick="event.stopPropagation();marcarFet('${e.id}')">✓ Fet</button>
+          <button class="action-btn edit" onclick="event.stopPropagation();obrirEditar('${e.id}')">✏ Editar</button>
+          <button class="action-btn send" onclick="event.stopPropagation();enviarHub('${e.id}')">→ Hub</button>
         </div>` : ''}
       </div>
     `).join('');
@@ -789,8 +789,8 @@
     });
   });
 
-  modalCancel.addEventListener('click', () => modalOverlay.classList.remove('open'));
-  modalSave.addEventListener('click', guardarEdicio);
+  modalCancel.addEventListener('click', (e) => { e.stopPropagation(); modalOverlay.classList.remove('open'); });
+  modalSave.addEventListener('click', (e) => { e.stopPropagation(); guardarEdicio(); });
   modalOverlay.addEventListener('click', e => {
     if (e.target === modalOverlay) modalOverlay.classList.remove('open');
   });
