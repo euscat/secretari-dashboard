@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Inbox" />
+  <meta name="theme-color" content="#0a0a0f" />
+  <title>Secretari · Inbox</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:           #0a0a0f;
+      --surface:      #111118;
+      --surface-2:    #18181f;
+      --border:       #1f1f2a;
+      --border-2:     #2a2a38;
+      --text:         #e4e4f0;
+      --text-2:       #8888a8;
+      --text-3:       #4a4a62;
+      --accent:       #7c6aff;
+      --accent-dim:   rgba(124,106,255,0.15);
+      --green:        #4ade80;
+      --green-dim:    rgba(74,222,128,0.12);
+      --yellow:       #fbbf24;
+      --yellow-dim:   rgba(251,191,36,0.12);
+      --red:          #f87171;
+      --red-dim:      rgba(248,113,113,0.12);
+      --blue:         #60a5fa;
+      --blue-dim:     rgba(96,165,250,0.12);
+      --orange:       #fb923c;
+      --orange-dim:   rgba(251,146,60,0.12);
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+    }
+
+    /* ── Layout ── */
+    .app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      height: 100dvh;
+    }
+
+    /* ── Header ── */
+    header {
+      padding: 20px 24px 0;
+      flex-shrink: 0;
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .logo {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-3);
+    }
+
+    .header-count {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-3);
+    }
+
+    .header-count span {
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    /* ── Tabs ── */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 4px;
+      margin-bottom: 16px;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 8px 12px;
+      border: none;
+      background: none;
+      color: var(--text-3);
+      font-size: 12px;
+      font-weight: 500;
+      font-family: 'Inter', sans-serif;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all 0.15s;
+      letter-spacing: 0.02em;
+    }
+
+    .tab.active {
+      background: var(--surface-2);
+      color: var(--text);
+      border: 1px solid var(--border-2);
+    }
+
+    /* ── Filtres ── */
+    .filters {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      scrollbar-width: none;
+      margin-bottom: 16px;
+    }
+    .filters::-webkit-scrollbar { display: none; }
+
+    .filter-chip {
+      flex-shrink: 0;
+      padding: 5px 12px;
+      border-radius: 99px;
+      border: 1px solid var(--border);
+      background: none;
+      color: var(--text-3);
+      font-size: 11px;
+      font-weight: 500;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .filter-chip.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    /* ── Llista ── */
+    .list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 24px 100px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+
+    .list::-webkit-scrollbar { width: 4px; }
+    .list::-webkit-scrollbar-track { background: transparent; }
+    .list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    /* ── Targeta ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 8px;
+      transition: border-color 0.15s;
+      position: relative;
+    }
+
+    .card:hover { border-color: var(--border-2); }
+    .card.processada { opacity: 0.45; }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .card-text {
+      flex: 1;
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 1.5;
+      color: var(--text);
+    }
+
+    .card-meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 5px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    /* Tipus */
+    .badge-idea     { background: var(--accent-dim); color: var(--accent); }
+    .badge-tasca    { background: var(--yellow-dim); color: var(--yellow); }
+    .badge-cita     { background: var(--blue-dim); color: var(--blue); }
+
+    /* Categoria */
+    .badge-feina    { background: var(--orange-dim); color: var(--orange); }
+    .badge-personal { background: var(--green-dim); color: var(--green); }
+    .badge-familia  { background: var(--red-dim); color: var(--red); }
+    .badge-ai       { background: var(--accent-dim); color: var(--accent); }
+    .badge-altres   { background: rgba(136,136,168,0.1); color: var(--text-2); }
+
+    /* Destinació */
+    .badge-dest-fh  { background: rgba(251,146,60,0.08); color: var(--orange); border: 1px solid rgba(251,146,60,0.2); }
+
+    .card-date {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--text-3);
+      margin-left: auto;
+    }
+
+    /* ── Accions ── */
+    .card-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+
+    .action-btn {
+      flex: 1;
+      padding: 7px 8px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: none;
+      color: var(--text-3);
+      font-size: 11px;
+      font-weight: 500;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .action-btn:hover { border-color: var(--border-2); color: var(--text); }
+
+    .action-btn.done:hover  { border-color: var(--green); color: var(--green); background: var(--green-dim); }
+    .action-btn.edit:hover  { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+    .action-btn.send:hover  { border-color: var(--orange); color: var(--orange); background: var(--orange-dim); }
+
+    /* ── Edit modal ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      align-items: flex-end;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal {
+      width: 100%;
+      background: var(--surface-2);
+      border-top: 1px solid var(--border-2);
+      border-radius: 16px 16px 0 0;
+      padding: 20px 24px 40px;
+      transform: translateY(20px);
+      transition: transform 0.2s;
+    }
+
+    .modal-overlay.open .modal { transform: translateY(0); }
+
+    .modal h3 {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: var(--text);
+    }
+
+    .modal-text {
+      font-size: 13px;
+      color: var(--text-2);
+      line-height: 1.5;
+      margin-bottom: 16px;
+      padding: 12px;
+      background: var(--surface);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .modal-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-3);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .modal-chips {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .modal-chip {
+      padding: 6px 12px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: none;
+      color: var(--text-3);
+      font-size: 12px;
+      font-weight: 500;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .modal-chip.selected {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .btn-primary {
+      flex: 1;
+      padding: 12px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 9px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+    }
+
+    .btn-secondary {
+      flex: 1;
+      padding: 12px;
+      background: none;
+      color: var(--text-2);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+    }
+
+    /* ── Empty state ── */
+    .empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 60px 24px;
+      color: var(--text-3);
+      text-align: center;
+    }
+
+    .empty-icon { font-size: 32px; margin-bottom: 4px; }
+    .empty-title { font-size: 14px; font-weight: 500; color: var(--text-2); }
+    .empty-sub { font-size: 12px; line-height: 1.5; }
+
+    /* ── Loading ── */
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 60px;
+      color: var(--text-3);
+      font-size: 13px;
+      gap: 8px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(10px);
+      background: var(--surface-2);
+      border: 1px solid var(--border-2);
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text);
+      opacity: 0;
+      transition: opacity 0.2s, transform 0.2s;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 200;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ── Bottom nav ── */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      padding: 12px 24px env(safe-area-inset-bottom, 12px);
+      display: flex;
+      justify-content: center;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-2);
+      font-size: 12px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.15s;
+    }
+
+    .nav-link:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ── Confiança baixa ── */
+    .card.baixa-confianca {
+      border-left: 2px solid var(--yellow);
+    }
+
+    .confianca-warn {
+      font-size: 10px;
+      color: var(--yellow);
+      margin-left: 4px;
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="header-top">
+      <span class="logo">Secretari</span>
+      <span class="header-count" id="headerCount"><span>—</span> pendents</span>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="inbox">Inbox</button>
+      <button class="tab" data-tab="tot">Tot</button>
+      <button class="tab" data-tab="arxiu">Arxiu</button>
+    </div>
+
+    <div class="filters" id="filters">
+      <button class="filter-chip active" data-filtre="tots">Tots</button>
+      <button class="filter-chip" data-filtre="tasca">Tasques</button>
+      <button class="filter-chip" data-filtre="idea">Idees</button>
+      <button class="filter-chip" data-filtre="cita">Cites</button>
+      <button class="filter-chip" data-filtre="feina">Feina</button>
+      <button class="filter-chip" data-filtre="personal">Personal</button>
+      <button class="filter-chip" data-filtre="familia">Família</button>
+    </div>
+  </header>
+
+  <div class="list" id="list">
+    <div class="loading"><div class="spinner"></div> Carregant...</div>
+  </div>
+</div>
+
+<!-- Modal editar -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h3>Editar entrada</h3>
+    <div class="modal-text" id="modalText"></div>
+
+    <div class="modal-label">Tipus</div>
+    <div class="modal-chips" id="chipsTipus">
+      <button class="modal-chip" data-val="idea">Idea</button>
+      <button class="modal-chip" data-val="tasca">Tasca</button>
+      <button class="modal-chip" data-val="cita">Cita</button>
+    </div>
+
+    <div class="modal-label">Categoria</div>
+    <div class="modal-chips" id="chipsCategoria">
+      <button class="modal-chip" data-val="feina">Feina</button>
+      <button class="modal-chip" data-val="personal">Personal</button>
+      <button class="modal-chip" data-val="familia">Família</button>
+      <button class="modal-chip" data-val="ai-projecte">AI Projecte</button>
+      <button class="modal-chip" data-val="altres">Altres</button>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-secondary" id="modalCancel">Cancel·lar</button>
+      <button class="btn-primary" id="modalSave">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Bottom nav -->
+<div class="bottom-nav">
+  <a href="https://secretari.vercel.app" class="nav-link">🎙️ Gravar nota</a>
+</div>
+
+<script>
+  // ── Estat ─────────────────────────────────────────────────
+  let tabActual = 'inbox';
+  let filtreActual = 'tots';
+  let entrades = [];
+  let editant = null;
+
+  // ── Elements ──────────────────────────────────────────────
+  const list        = document.getElementById('list');
+  const headerCount = document.getElementById('headerCount');
+  const toast       = document.getElementById('toast');
+  const modalOverlay = document.getElementById('modalOverlay');
+  const modalText   = document.getElementById('modalText');
+  const modalCancel = document.getElementById('modalCancel');
+  const modalSave   = document.getElementById('modalSave');
+
+  // ── Utils ─────────────────────────────────────────────────
+  function showToast(msg, duration = 2500) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), duration);
+  }
+
+  function formatData(iso) {
+    const d = new Date(iso);
+    const ara = new Date();
+    const diff = ara - d;
+    const min = Math.floor(diff / 60000);
+    const h = Math.floor(diff / 3600000);
+    const dies = Math.floor(diff / 86400000);
+    if (min < 1) return 'ara mateix';
+    if (min < 60) return `fa ${min}m`;
+    if (h < 24) return `fa ${h}h`;
+    if (dies < 7) return `fa ${dies}d`;
+    return d.toLocaleDateString('ca', { day: 'numeric', month: 'short' });
+  }
+
+  function badgeTipus(tipus) {
+    const map = { idea: 'idea', tasca: 'tasca', cita: 'cita' };
+    const cls = map[tipus] || 'altres';
+    const icons = { idea: '💡', tasca: '✓', cita: '📅' };
+    return `<span class="badge badge-${cls}">${icons[tipus] || ''} ${tipus || '—'}</span>`;
+  }
+
+  function badgeCategoria(cat) {
+    const map = { feina: 'feina', personal: 'personal', familia: 'familia', 'ai-projecte': 'ai', altres: 'altres' };
+    const cls = map[cat] || 'altres';
+    return `<span class="badge badge-${cls}">${cat || '—'}</span>`;
+  }
+
+  // ── Fetch ─────────────────────────────────────────────────
+  async function carregarEntrades() {
+    list.innerHTML = '<div class="loading"><div class="spinner"></div> Carregant...</div>';
+    try {
+      const res = await fetch(`/api/entrades?filtre=${tabActual}`);
+      entrades = await res.json();
+      renderLlista();
+    } catch (e) {
+      list.innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-title">Error de connexió</div><div class="empty-sub">Recarrega la pàgina</div></div>';
+    }
+  }
+
+  // ── Render ────────────────────────────────────────────────
+  function renderLlista() {
+    let filtrades = entrades;
+
+    if (filtreActual !== 'tots') {
+      filtrades = entrades.filter(e =>
+        e.tipus === filtreActual ||
+        e.categoria === filtreActual
+      );
+    }
+
+    const pendents = entrades.filter(e => !e.processada).length;
+    headerCount.innerHTML = `<span>${pendents}</span> pendents`;
+
+    if (filtrades.length === 0) {
+      list.innerHTML = `
+        <div class="empty">
+          <div class="empty-icon">🎙️</div>
+          <div class="empty-title">${tabActual === 'inbox' ? 'Inbox buit' : 'Res aquí'}</div>
+          <div class="empty-sub">${tabActual === 'inbox' ? 'Grava una nota per començar' : 'Canvia els filtres per veure entrades'}</div>
+        </div>`;
+      return;
+    }
+
+    list.innerHTML = filtrades.map(e => `
+      <div class="card ${e.processada ? 'processada' : ''} ${e.confiança === 'baixa' ? 'baixa-confianca' : ''}" data-id="${e.id}">
+        <div class="card-top">
+          <div class="card-text">
+            ${e.text || e.raw_text || '—'}
+            ${e.confiança === 'baixa' ? '<span class="confianca-warn">⚠ Revisa</span>' : ''}
+          </div>
+        </div>
+        <div class="card-meta">
+          ${badgeTipus(e.tipus)}
+          ${badgeCategoria(e.categoria)}
+          ${e.destinacio === 'familia-hub' ? '<span class="badge badge-dest-fh">→ Família Hub</span>' : ''}
+          <span class="card-date">${formatData(e.created_at)}</span>
+        </div>
+        ${!e.processada ? `
+        <div class="card-actions">
+          <button class="action-btn done" data-action="done" data-id="${e.id}">✓ Fet</button>
+          <button class="action-btn edit" data-action="edit" data-id="${e.id}">✏ Editar</button>
+          <button class="action-btn send" data-action="send" data-id="${e.id}">→ Hub</button>
+        </div>` : ''}
+      </div>
+    `).join('');
+  }
+
+  // ── Accions ───────────────────────────────────────────────
+  async function marcarFet(id) {
+    try {
+      await fetch('/api/entrades', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, processada: true })
+      });
+      entrades = entrades.map(e => e.id === id ? { ...e, processada: true } : e);
+      renderLlista();
+      showToast('✓ Marcat com a fet');
+    } catch { showToast('Error en guardar'); }
+  }
+
+  function obrirEditar(id) {
+    editant = entrades.find(e => e.id === id);
+    if (!editant) return;
+
+    modalText.textContent = editant.text || editant.raw_text || '—';
+
+    // Seleccionar tipus actual
+    document.querySelectorAll('#chipsTipus .modal-chip').forEach(c => {
+      c.classList.toggle('selected', c.dataset.val === editant.tipus);
+    });
+
+    // Seleccionar categoria actual
+    document.querySelectorAll('#chipsCategoria .modal-chip').forEach(c => {
+      c.classList.toggle('selected', c.dataset.val === editant.categoria);
+    });
+
+    modalOverlay.classList.add('open');
+  }
+
+  async function guardarEdicio() {
+    if (!editant) return;
+
+    const nouTipus = document.querySelector('#chipsTipus .modal-chip.selected')?.dataset.val;
+    const nouaCat  = document.querySelector('#chipsCategoria .modal-chip.selected')?.dataset.val;
+
+    try {
+      await fetch('/api/entrades', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: editant.id, tipus: nouTipus, categoria: nouaCat })
+      });
+      entrades = entrades.map(e => e.id === editant.id ? { ...e, tipus: nouTipus, categoria: nouaCat } : e);
+      renderLlista();
+      modalOverlay.classList.remove('open');
+      showToast('✓ Editat correctament');
+    } catch { showToast('Error en guardar'); }
+  }
+
+  function enviarHub(id) {
+    // Fase 2 — per implementar
+    showToast('🚧 Integració Família Hub — pròximament');
+  }
+
+  // ── Events ────────────────────────────────────────────────
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      tabActual = tab.dataset.tab;
+      filtreActual = 'tots';
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.toggle('active', c.dataset.filtre === 'tots'));
+      carregarEntrades();
+    });
+  });
+
+  document.querySelectorAll('.filter-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      filtreActual = chip.dataset.filtre;
+      renderLlista();
+    });
+  });
+
+  list.addEventListener('click', e => {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const { action, id } = btn.dataset;
+    if (action === 'done') marcarFet(id);
+    if (action === 'edit') obrirEditar(id);
+    if (action === 'send') enviarHub(id);
+  });
+
+  // Modal chips
+  document.querySelectorAll('#chipsTipus .modal-chip').forEach(c => {
+    c.addEventListener('click', () => {
+      document.querySelectorAll('#chipsTipus .modal-chip').forEach(x => x.classList.remove('selected'));
+      c.classList.add('selected');
+    });
+  });
+
+  document.querySelectorAll('#chipsCategoria .modal-chip').forEach(c => {
+    c.addEventListener('click', () => {
+      document.querySelectorAll('#chipsCategoria .modal-chip').forEach(x => x.classList.remove('selected'));
+      c.classList.add('selected');
+    });
+  });
+
+  modalCancel.addEventListener('click', () => modalOverlay.classList.remove('open'));
+  modalSave.addEventListener('click', guardarEdicio);
+  modalOverlay.addEventListener('click', e => {
+    if (e.target === modalOverlay) modalOverlay.classList.remove('open');
+  });
+
+  // ── Init ──────────────────────────────────────────────────
+  carregarEntrades();
+
+  // Recarregar cada 30 segons automàticament
+  setInterval(carregarEntrades, 30000);
+</script>
+</body>
+</html>
