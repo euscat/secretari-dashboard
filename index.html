@@ -655,9 +655,9 @@
         </div>
         ${!e.processada ? `
         <div class="card-actions">
-          <button class="action-btn done" data-action="done" data-id="${e.id}">✓ Fet</button>
-          <button class="action-btn edit" data-action="edit" data-id="${e.id}">✏ Editar</button>
-          <button class="action-btn send" data-action="send" data-id="${e.id}">→ Hub</button>
+          <button class="action-btn done" onclick="marcarFet('${e.id}')">✓ Fet</button>
+          <button class="action-btn edit" onclick="obrirEditar('${e.id}')">✏ Editar</button>
+          <button class="action-btn send" onclick="enviarHub('${e.id}')">→ Hub</button>
         </div>` : ''}
       </div>
     `).join('');
