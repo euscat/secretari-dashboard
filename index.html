@@ -665,6 +665,7 @@
 
   // ── Accions ───────────────────────────────────────────────
   async function marcarFet(id) {
+    id = isNaN(id) ? id : Number(id);
     try {
       await fetch('/api/entrades', {
         method: 'PATCH',
@@ -678,6 +679,7 @@
   }
 
   function obrirEditar(id) {
+    id = isNaN(id) ? id : Number(id);
     editant = entrades.find(e => e.id === id);
     if (!editant) return;
 
@@ -716,6 +718,7 @@
   }
 
   async function enviarHub(id) {
+    id = isNaN(id) ? id : Number(id);
     const entrada = entrades.find(e => e.id === id);
     if (!entrada) return;
 
