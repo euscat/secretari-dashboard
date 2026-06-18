@@ -715,9 +715,30 @@
     } catch { showToast('Error en guardar'); }
   }
 
-  function enviarHub(id) {
-    // Fase 2 — per implementar
-    showToast('🚧 Integració Família Hub — pròximament');
+  async function enviarHub(id) {
+    const entrada = entrades.find(e => e.id === id);
+    if (!entrada) return;
+
+    try {
+      const res = await fetch('/api/hub', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: entrada.id,
+          text: entrada.text,
+          categoria: entrada.categoria,
+          assignat_a: entrada.assignat_a
+        })
+      });
+
+      if (!res.ok) throw new Error();
+
+      entrades = entrades.map(e => e.id === id ? { ...e, processada: true } : e);
+      renderLlista();
+      showToast('✓ Enviat al Família Hub');
+    } catch {
+      showToast('Error en enviar al Hub');
+    }
   }
 
   // ── Events ────────────────────────────────────────────────
