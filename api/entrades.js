@@ -5,51 +5,46 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_KEY
 );
 
-// Mapeig categories Secretari → categories Família Hub
-const mapCategoria = (categoria) => {
-  const mapa = {
-    'familia': 'família',
-    'personal': 'casa',
-    'feina': 'gestions',
-    'ai-projecte': 'gestions',
-    'altres': 'casa'
-  };
-  return mapa[categoria] || 'casa';
-};
-
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, PATCH, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  if (req.method === 'POST') {
-    const { id, text, categoria, assignat_a } = req.body;
-    if (!id || !text) return res.status(400).json({ error: 'ID i text requerits' });
+  // GET — llegir entrades
+  if (req.method === 'GET') {
+    const { filtre = 'inbox', limit = 50 } = req.query;
 
-    // 1. Inserir a todos del Família Hub
-    const { error: errorTodo } = await supabase
-      .from('todos')
-      .insert({
-        text,
-        cat: mapCategoria(categoria),
-        urg: 'alta',
-        done: false,
-        assignee: assignat_a || null
-      });
-
-    if (errorTodo) return res.status(500).json({ error: errorTodo.message });
-
-    // 2. Marcar entrada com a processada al Secretari
-    const { error: errorUpdate } = await supabase
+    let query = supabase
       .from('entrades_personals')
-      .update({ processada: true })
-      .eq('id', id);
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(limit);
 
-    if (errorUpdate) return res.status(500).json({ error: errorUpdate.message });
+    if (filtre === 'inbox') query = query.eq('processada', false);
+    if (filtre === 'arxiu') query = query.eq('processada', true);
+    // 'tot' no filtra
 
-    return res.status(200).json({ ok: true });
+    const { data, error } = await query;
+    if (error) return res.status(500).json({ error: error.message });
+    return res.status(200).json(data);
+  }
+
+  // PATCH — actualitzar entrada
+  if (req.method === 'PATCH') {
+    const { id, ...camps } = req.body;
+    if (!id) return res.status(400).json({ error: 'ID requerit' });
+
+    const { data, error } = await supabase
+      .from('entrades_personals')
+      .update(camps)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) return res.status(500).json({ error: error.message });
+    return res.status(200).json(data);
   }
 
   return res.status(405).json({ error: 'Mètode no permès' });
