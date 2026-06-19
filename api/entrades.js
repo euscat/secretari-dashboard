@@ -7,7 +7,7 @@ const supabase = createClient(
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, PATCH, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, PATCH, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -45,6 +45,20 @@ module.exports = async (req, res) => {
 
     if (error) return res.status(500).json({ error: error.message });
     return res.status(200).json(data);
+  }
+
+  // DELETE — eliminar entrada
+  if (req.method === 'DELETE') {
+    const { id } = req.query;
+    if (!id) return res.status(400).json({ error: 'ID requerit' });
+
+    const { error } = await supabase
+      .from('entrades_personals')
+      .delete()
+      .eq('id', id);
+
+    if (error) return res.status(500).json({ error: error.message });
+    return res.status(200).json({ ok: true });
   }
 
   return res.status(405).json({ error: 'Mètode no permès' });
