@@ -264,6 +264,8 @@
     .action-btn.done:hover  { border-color: var(--green); color: var(--green); background: var(--green-dim); }
     .action-btn.edit:hover  { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
     .action-btn.send:hover  { border-color: var(--orange); color: var(--orange); background: var(--orange-dim); }
+    .action-btn.delete      { flex: 0 0 auto; padding: 7px 12px; }
+    .action-btn.delete:hover { border-color: var(--red); color: var(--red); background: var(--red-dim); }
 
     /* ── Edit modal ── */
     .modal-overlay {
@@ -653,12 +655,14 @@
           ${e.destinacio === 'familia-hub' ? '<span class="badge badge-dest-fh">→ Família Hub</span>' : ''}
           <span class="card-date">${formatData(e.created_at)}</span>
         </div>
-        ${!e.processada ? `
         <div class="card-actions">
+          ${!e.processada ? `
           <button class="action-btn done" onclick="event.stopPropagation();marcarFet('${e.id}')">✓ Fet</button>
           <button class="action-btn edit" onclick="event.stopPropagation();obrirEditar('${e.id}')">✏ Editar</button>
           <button class="action-btn send" onclick="event.stopPropagation();enviarHub('${e.id}')">→ Hub</button>
-        </div>` : ''}
+          ` : ''}
+          <button class="action-btn delete" onclick="event.stopPropagation();eliminarEntrada('${e.id}')">🗑</button>
+        </div>
       </div>
     `).join('');
   }
@@ -676,6 +680,24 @@
       renderLlista();
       showToast('✓ Marcat com a fet');
     } catch { showToast('Error en guardar'); }
+  }
+
+  async function eliminarEntrada(id) {
+    id = isNaN(id) ? id : Number(id);
+    const entrada = entrades.find(e => e.id === id);
+    const text = entrada?.text || entrada?.raw_text || 'aquesta nota';
+    const confirmar = confirm(`Eliminar "${text.slice(0, 60)}"? Aquesta acció no es pot desfer.`);
+    if (!confirmar) return;
+
+    try {
+      const res = await fetch(`/api/entrades?id=${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error();
+      entrades = entrades.filter(e => e.id !== id);
+      renderLlista();
+      showToast('🗑 Eliminat');
+    } catch {
+      showToast('Error en eliminar');
+    }
   }
 
   function obrirEditar(id) {
