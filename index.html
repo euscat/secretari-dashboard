@@ -214,6 +214,7 @@
     .badge-idea     { background: var(--accent-dim); color: var(--accent); }
     .badge-tasca    { background: var(--yellow-dim); color: var(--yellow); }
     .badge-cita     { background: var(--blue-dim); color: var(--blue); }
+    .badge-regal    { background: var(--red-dim); color: var(--red); }
 
     /* Categoria */
     .badge-feina    { background: var(--orange-dim); color: var(--orange); }
@@ -593,9 +594,9 @@
   }
 
   function badgeTipus(tipus) {
-    const map = { idea: 'idea', tasca: 'tasca', cita: 'cita' };
+    const map = { idea: 'idea', tasca: 'tasca', cita: 'cita', regal: 'regal' };
     const cls = map[tipus] || 'altres';
-    const icons = { idea: '💡', tasca: '✓', cita: '📅' };
+    const icons = { idea: '💡', tasca: '✓', cita: '📅', regal: '🎁' };
     return `<span class="badge badge-${cls}">${icons[tipus] || ''} ${tipus || '—'}</span>`;
   }
 
@@ -752,7 +753,10 @@
           id: entrada.id,
           text: entrada.text,
           categoria: entrada.categoria,
-          assignat_a: entrada.assignat_a
+          assignat_a: entrada.assignat_a,
+          tipus: entrada.tipus,
+          regal_qui: entrada.regal_qui,
+          regal_ocasio: entrada.regal_ocasio
         })
       });
 
